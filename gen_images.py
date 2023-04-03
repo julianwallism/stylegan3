@@ -81,7 +81,6 @@ def make_transform(translate: Tuple[float,float], angle: float):
 @click.option('--outdir_img', help='Where to save the output images', type=str, default="out/images", required=False, metavar='DIR')
 @click.option('--outdir_seeds', help='Where to save the latent vector', type=str, default="out/seeds", required=False, metavar='DIR')
 @click.option('--append_latent', is_flag=True, help='If true, append the latent vector to the latent vector file (if it exists). Otherwise, overwrite the file.')
-@click.option('--add_attributes', is_flag=True, help='If true, calculates the attributes of the generated images and stores them')
 def generate_images(
     network_pkl: str,
     seeds: List[int],
@@ -93,9 +92,8 @@ def generate_images(
     rotate: float,
     class_idx: Optional[int],
     w_space: bool, 
-    append_latent: bool,
-    add_attributes: bool
-):
+    append_latent: bool
+    ):
     """Generate images using pretrained network pickle.
 
     Examples:

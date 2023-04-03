@@ -110,23 +110,26 @@ def generate_images(
 
     # Open latent vector file (npy) and store in a list.
     
-    seeds = np.load(latent_vector, allow_pickle=True).item()
+    seeds = np.load(latent_vector)
+
 
     # Generate images.
     print('Generating images...')
-    for key, latent_vector in seeds.items():
+    for idx, latent_vector in enumerate(seeds):
+
         if hasattr(G.synthesis, 'input'):
             m = make_transform(translate, rotate)
             m = np.linalg.inv(m)
             G.synthesis.input.transform.copy_(torch.from_numpy(m))
         if w_space:
-            latent_vector = torch.from_numpy(latent_vector[0]).to(device).unsqueeze(0)
+            latent_vector = torch.from_numpy(latent_vector).to(device).unsqueeze(0)
             img = G.synthesis(latent_vector, noise_mode=noise_mode)
         else:
             img = G(latent_vector, label, truncation_psi=truncation_psi, noise_mode=noise_mode)
         img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
 
-        PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir_img}/{key}')
+        PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir_img}/{idx}.png')
+        print(idx)
     
 
 #----------------------------------------------------------------------------

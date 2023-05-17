@@ -232,37 +232,16 @@ def preprocess_image(image_path):
     return image
 #----------------------------------------------------------------------------
 
-@click.command()
-@click.option('--network', 'network_pkl', help='Network pickle filename', required=False, default='models/ffhq1024.pkl', metavar='FILE')
-@click.option('--target', 'target_fname', help='Target image file to project to', required=True, metavar='FILE')
-@click.option('--num-steps',              help='Number of optimization steps', type=int, default=1000, show_default=True)
-@click.option('--seed',                   help='Random seed', type=int, default=303, show_default=True)
-@click.option('--save-video',             help='Save an mp4 video of optimization progress', type=bool, default=True, show_default=True)
-@click.option('--outdir',                 help='Where to save the output images', required=False, default="out/projected", metavar='DIR')
+
 def run_projection(
-    network_pkl: str,
+    G,
     target_fname: str,
-    outdir: str,
-    save_video: bool,
-    seed: int,
-    num_steps: int
+    num_steps: int,
+    device
 ):
-    """Project given image to the latent space of pretrained network pickle.
-
-    Examples:
-
-    \b
-    python projector.py --outdir=out --target=~/mytargetimg.png \\
-        --network=https://nvlabs-fi-cdn.nvidia.com/stylegan2-ada-pytorch/pretrained/ffhq.pkl
-    """
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-
-    # Load networks.
-    print('Loading networks from "%s"...' % network_pkl)
-    device = torch.device('cuda')
-    with dnnlib.util.open_url(network_pkl) as fp:
-        G = legacy.load_network_pkl(fp)['G_ema'].requires_grad_(False).to(device) # type: ignore
+    # Initialize.
+    np.random.seed(33)
+    torch.manual_seed(33)
 
     # Load target image.
 
@@ -270,7 +249,6 @@ def run_projection(
     target_uint8 = np.array(target_pil, dtype=np.uint8)
 
     # Optimize projection.
-    start_time = perf_counter()
     projected_z_steps = project(
         G,
         target=torch.tensor(target_uint8.transpose([2, 0, 1]), device=device), # pylint: disable=not-callable
@@ -278,31 +256,9 @@ def run_projection(
         device=device,
         verbose=True
     )
-    print (f'Elapsed: {(perf_counter()-start_time):.1f} s')
 
-    
-    # Render debug output: optional video and projected image and W vector.
-    os.makedirs(outdir, exist_ok=True)
-    if save_video:
-        video = imageio.get_writer(f'{outdir}/proj.mp4', mode='I', fps=10, codec='libx264', bitrate='16M')
-        print (f'Saving optimization progress video "{outdir}/proj.mp4"')
-        for projected_z in projected_z_steps:
-            synth_image = G.synthesis(projected_z.unsqueeze(0), noise_mode='const')
-            synth_image = (synth_image + 1) * (255/2)
-            synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
-            video.append_data(np.concatenate([target_uint8, synth_image], axis=1))
-        video.close()
 
-    # Save final projected frame and W vector.
-    target_pil.save(f'{outdir}/target.png')
-    projected_z = projected_z_steps[-1]
-    device = torch.device('cuda')
-    labels = torch.zeros([1, G.c_dim], device=device)
-    synth_image = G(projected_z.unsqueeze(0), labels, truncation_psi=1, noise_mode='const')
-    synth_image = (synth_image + 1) * (255/2)
-    synth_image = synth_image.permute(0, 2, 3, 1).clamp(0, 255).to(torch.uint8)[0].cpu().numpy()
-    PIL.Image.fromarray(synth_image, 'RGB').save(f'{outdir}/proj.png')
-    np.save(f'{outdir}/projected.npy', projected_z.unsqueeze(0).cpu().numpy())
+    return projected_z_steps[-1].cpu().numpy().reshape(1, 512)
 
 #----------------------------------------------------------------------------
 

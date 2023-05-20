@@ -69,7 +69,7 @@ vectors = [
 
 text = [
     "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Young:  ",
-    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Old:",
+    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Old:  ",
     "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ", "Gender (♀ - | ♂ +) :  ",
     "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  "
 ]

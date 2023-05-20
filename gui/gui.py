@@ -17,6 +17,8 @@ import torch
 import dnnlib
 import legacy
 
+from functools import partial
+
 from projector import run_projection
 
 
@@ -30,27 +32,29 @@ with dnnlib.util.open_url(network_pkl) as f:
 
 ogLatentVector = latentVector = np.random.randn(1, 512)
 
-emotionHappyVector = np.load("./out/directions/emotion_happy_svm.npy")
-emotionNeutralVector = np.load("./out/directions/emotion_neutral_svm.npy")
-emotionAngryVector = np.load("./out/directions/emotion_angry_svm.npy")
-emotionSadVector = np.load("./out/directions/emotion_sad2_svm.npy")
+numDirection = "20k"
 
-raceWhiteVector = np.load("./out/directions/race_white_svm.npy")
-raceBlackVector = np.load("./out/directions/race_black_svm.npy")
-raceAsianVector = np.load("./out/directions/race_asian_svm.npy")
-raceIndianVector = np.load("./out/directions/race_indian_svm.npy")
+emotionHappyVector = np.load("./out/directions/"+numDirection+"/emotion_happy_1.npy")
+emotionNeutralVector = np.load("./out/directions/"+numDirection+"/emotion_neutral_1.npy")
+emotionAngryVector = np.load("./out/directions/"+numDirection+"/emotion_angry_1.npy")
+emotionSurpriseVector = np.load("./out/directions/"+numDirection+"/emotion_surprise_1.npy")
 
-hairBlackVector = np.load("./out/directions/hair_black_svm.npy")
-hairBlondVector = np.load("./out/directions/hair_blond_svm.npy")
-hairBrownVector = np.load("./out/directions/hair_brown_svm.npy")
-hairGrayVector = np.load("./out/directions/hair_gray_svm.npy")
+raceWhiteVector = np.load("./out/directions/"+numDirection+"/race_white.npy")
+raceBlackVector = np.load("./out/directions/"+numDirection+"/race_black.npy")
+raceAsianVector = np.load("./out/directions/"+numDirection+"/race_asian.npy")
+raceMidEastVector = np.load("./out/directions/"+numDirection+"/race_mideast.npy")
 
-ageVector = np.load("./out/directions/age_svm.npy")
-genderVector = np.load("./out/directions/sex.npy")
-beardVector = np.load("./out/directions/beard_svm.npy")
-glassesVector = np.load("./out/directions/glasses_svm.npy")
-hatVector = np.load("./out/directions/hat_svm.npy")
-baldVector = np.load("./out/directions/hair_bald_svm.npy")
+hairBlackVector = np.load("./out/directions/"+numDirection+"/hair_black.npy")
+hairBlondVector = np.load("./out/directions/"+numDirection+"/hair_blond.npy")
+hairBrownVector = np.load("./out/directions/"+numDirection+"/hair_brown.npy")
+hairGrayVector = np.load("./out/directions/"+numDirection+"/hair_gray.npy")
+
+ageVector = np.load("./out/directions/"+numDirection+"/age.npy")
+genderVector = np.load("./out/directions/"+numDirection+"/sex.npy")
+beardVector = np.load("./out/directions/"+numDirection+"/beard.npy")
+glassesVector = np.load("./out/directions/"+numDirection+"/glasses.npy")
+hatVector = np.load("./out/directions/"+numDirection+"/hat.npy")
+baldVector = np.load("./out/directions/"+numDirection+"/hair_bald.npy")
 
 projectionTarget = ""
 
@@ -59,27 +63,27 @@ vectors = [
     emotionHappyVector, raceWhiteVector, hairBlackVector, baldVector, ageVector,
     emotionNeutralVector, raceBlackVector, hairBlondVector, beardVector, genderVector,
     emotionAngryVector, raceAsianVector, hairBrownVector, glassesVector,
-    emotionSadVector, raceIndianVector, hairGrayVector, hatVector
+    emotionSurpriseVector, raceMidEastVector, hairGrayVector, hatVector
 ]
 
 text = [
     "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Age:  ",
     "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Gender (♀ - | ♂ +) :  ",
     "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ",
-    "Sad:  ", "Indian:  ", "Hair Gray:  ", "Hat:  "
+    "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  "
 ]
 
-nerfingValues = [1, 1, 1, 1, 2,
-                 1, 1, 1, 1, 4,
-                 1, 1, 1, 3,
-                 1, 1, 1, 1]
+nerfingValues = [20, 40, 40, 40, 40,
+                 20, 40, 40, 40, 40,
+                 20, 10, 40, 40,
+                 20, 5, 40, 5]
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1060, 880)
-        MainWindow.setFixedSize(1060, 880)
+        MainWindow.resize(1065, 880)
+        MainWindow.setFixedSize(1065, 880)
         MainWindow.setLayoutDirection(QtCore.Qt.LeftToRight)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -145,6 +149,9 @@ class Ui_MainWindow(object):
 
         self.label_list = []
         self.slider_list = []
+        self.up_button_list = []
+        self.down_button_list = []
+        self.nerf_label_list = []
 
         x_start_labels = 6
         y_start_labels = 610
@@ -167,7 +174,7 @@ class Ui_MainWindow(object):
                 self.label_list.append(label)
 
                 slider = QtWidgets.QSlider(self.centralwidget)
-                slider.setGeometry(QtCore.QRect(x_slider, y_slider, 170, 22))
+                slider.setGeometry(QtCore.QRect(x_slider, y_slider, 150, 22))
                 slider.setOrientation(QtCore.Qt.Horizontal)
                 slider.setPageStep(1)
                 slider.setTickInterval(5)
@@ -176,6 +183,26 @@ class Ui_MainWindow(object):
                 slider.valueChanged.connect(self.moveVector)
                 slider.valueChanged.connect(self.labelChange)
                 self.slider_list.append(slider)
+
+                upArrow = QtWidgets.QToolButton(self.centralwidget)
+                upArrow.setGeometry(QtCore.QRect(x_slider+157, y_slider-9, 15, 15))
+                upArrow.setArrowType(QtCore.Qt.UpArrow)
+                upArrow.clicked.connect(lambda _, idx=(row,col), value=1: self.arrowClicked(idx, value))
+                self.up_button_list.append(upArrow)
+
+                downArrow = QtWidgets.QToolButton(self.centralwidget)
+                downArrow.setGeometry(QtCore.QRect(x_slider+157, y_slider+9, 15, 15))
+                downArrow.setArrowType(QtCore.Qt.DownArrow)
+                downArrow.clicked.connect(lambda _, idx=(row,col), value=-1: self.arrowClicked(idx, value))
+                self.down_button_list.append(downArrow)
+
+                label2 = QtWidgets.QLabel(self.centralwidget)
+                label2.setGeometry(QtCore.QRect(x_slider+168, y_slider, 30, 13))
+                label2.setLayoutDirection(QtCore.Qt.LeftToRight)
+                label2.setAlignment(QtCore.Qt.AlignCenter)
+                label2.setText("0")
+                self.nerf_label_list.append(label2)
+
 
 #-------------------------------------------------------------------------
        
@@ -225,6 +252,7 @@ class Ui_MainWindow(object):
         self.saveButton.setStyleSheet("background-color: #8cfa5c;")
         self.saveButton.clicked.connect(self.saveImage)
 
+
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
@@ -232,11 +260,15 @@ class Ui_MainWindow(object):
 
 
     def retranslateUi(self, MainWindow):
+        global nerfingValues
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
 
         for i in range(len(self.label_list)):
             self.label_list[i].setText(_translate("MainWindow", text[i] + str(self.slider_list[i].value())))
+        
+        for i in range(len(self.nerf_label_list)):
+            self.nerf_label_list[i].setText(_translate("MainWindow", str(nerfingValues[i])))
 
         self.saveLatentCheckBox.setText(_translate("MainWindow", "Save latent"))
         self.saveVideoCheckBox1.setText(_translate("MainWindow", "Save video (1 by 1)"))
@@ -270,6 +302,20 @@ class Ui_MainWindow(object):
         for i in range(len(self.label_list)):
             self.label_list[i].setText(text[i] + str(self.slider_list[i].value()))
       
+#-------------------------------------------------------------------------
+
+    def arrowClicked(self, index, value):
+        global nerfingValues
+        """ Increase nerfing value of slider by 1"""
+        row, col = index
+        index = row * 4 + col     
+        newValue = nerfingValues[index] + value
+        if newValue == 0:
+            nerfingValues[index] = 1   
+        else:
+            nerfingValues[index] += value
+        self.nerf_label_list[index].setText(str(nerfingValues[index]))
+        self.moveVector()
 
 #-------------------------------------------------------------------------
 # Image IO Functions

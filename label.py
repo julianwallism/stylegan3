@@ -21,6 +21,7 @@ extractor_emotion_1 = AutoFeatureExtractor.from_pretrained("jayanta/google-vit-b
 extractor_emotion_2 = AutoFeatureExtractor.from_pretrained("Rajaram1996/FacialEmoRecog")
 extractors = [extractor_gender, extractor_age, extractor_eyeglasses, extractor_emotion_1, extractor_emotion_2]
 
+print("Extractors loaded")
 
 model_gender = AutoModelForImageClassification.from_pretrained("rizvandwiki/gender-classification-2")
 model_age = AutoModelForImageClassification.from_pretrained("nateraw/vit-age-classifier")
@@ -28,6 +29,8 @@ model_eyeglasses = AutoModelForImageClassification.from_pretrained("youngp5/eyeg
 model_emotion_2 = AutoModelForImageClassification.from_pretrained("jayanta/google-vit-base-patch16-224-cartoon-emotion-detection")
 model_emotion_2 = AutoModelForImageClassification.from_pretrained("Rajaram1996/FacialEmoRecog")
 models = [model_gender, model_age, model_eyeglasses, model_emotion_2, model_emotion_2]
+
+print("Hugging Face models loaded")
 
 #########################################################################
 # EfficientNet Transfer Learning
@@ -74,63 +77,82 @@ model_hat.eval()
 
 label_encoder_hat = ["No Hat", "Hat"]
 
+print("Transfer Learning models loaded")
+
 #########################################################################
 
 # labels = []
-labels = np.load("out/good_labels.npy").tolist()
+labels = np.load("out/good_labels_orig.npy")
 
 # loop through all images in out/images and pass them through the model
 image_dir = "out/images"
-i = 0
-lst = sorted(os.listdir(image_dir))
-for idx, filename in tqdm(enumerate(lst)):
-    image_path = os.path.join(image_dir, filename)
-    img = Image.open(image_path)
 
-    labels.append([filename])
+batch_size = 100
 
-    # HUGGINGFACE MODELS
+num_images = 20000
+
+for batch_start in tqdm(range(10000, num_images, batch_size)):
+    batch_end = min(batch_start + batch_size, num_images)
+    batch_size_actual = batch_end - batch_start
+
+    batch_images = torch.zeros((batch_size_actual, 3, 224, 224)).to(device)
+
+      # Load and preprocess images in the batch
+    for i, idx in enumerate(range(batch_start, batch_end)):
+        filename = "seed" + str(idx) + ".png"
+        image_path = os.path.join(image_dir, filename)
+        img = Image.open(image_path).convert("RGB")
+        img = data_transforms(img)
+        batch_images[i] = img
+
+        if idx >= len(labels):
+            labels = np.vstack([labels, np.zeros(10, dtype=object)])
+            labels[idx][0] = filename
+
+    # Pass images through Hugging Face models
     for i in range(len(extractors)):
         extractor = extractors[i]
         model = models[i]
+        model = model.to(device)
 
-        inputs = extractor(images=img, return_tensors="pt")
-        outputs = model(**inputs)
-        logits = outputs.logits
-        predicted_class_idx = logits.argmax(-1).item()
-        predicted_class_label = model.config.id2label[predicted_class_idx]
-        labels[idx].append(predicted_class_label)
+        inputs = extractor(images=batch_images, return_tensors="pt")
+        inputs = inputs.to(device)
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            _, predicted_class_indices = torch.max(logits, -1)
+            predicted_class_indices = predicted_class_indices.cpu().numpy()
 
-    
-    # EFFICIENTNET
-    img = img.convert('RGB')
-    img = data_transforms(img).unsqueeze(0).to(device)
+        # Update labels for the batch
+        for j in range(batch_size_actual):
+            labels[batch_start + j][i+1] = model.config.id2label[predicted_class_indices[j]]
+
+    # Pass images through EfficientNet models
+    batch_images = batch_images.to(device)
     with torch.no_grad():
-        # HAIR
-        output = model_hair(img)
-        _, predicted = torch.max(output.data, 1)
-        label = label_encoder_hair[predicted.item()]
-        labels[idx].append(label)
+        # Hair
+        output_hair = model_hair(batch_images)
+        _, predicted_hair = torch.max(output_hair, 1)
+        predicted_hair = predicted_hair.cpu().numpy()
 
-        # BEARD
-        output = model_beard(img)
-        _, predicted = torch.max(output.data, 1)
-        label = label_encoder_beard[predicted.item()]
-        labels[idx].append(label)
+        # Beard
+        output_beard = model_beard(batch_images)
+        _, predicted_beard = torch.max(output_beard, 1)
+        predicted_beard = predicted_beard.cpu().numpy()
 
-        # HAT
-        output = model_hat(img)
-        _, predicted = torch.max(output.data, 1)
-        label = label_encoder_hat[predicted.item()]
-        labels[idx].append(label)
+        # Hat
+        output_hat = model_hat(batch_images)
+        _, predicted_hat = torch.max(output_hat, 1)
+        predicted_hat = predicted_hat.cpu().numpy()
 
-    # # DEEPFACE
-    # objs = DeepFace.analyze(img_path=image_path, actions=['race'], silent=True)
-    # race = objs[0]['dominant_race']
-    # labels[idx].append(race)
+    # Update labels for the batch
+    for j in range(batch_size_actual):
+        labels[batch_start + j][6] = label_encoder_hair[predicted_hair[j]]
+        labels[batch_start + j][7] = label_encoder_beard[predicted_beard[j]]
+        labels[batch_start + j][8] = label_encoder_hat[predicted_hat[j]]
 
+    # Update labels for the race column
+    for j in range(batch_size_actual):
+        labels[batch_start + j][9] = "nan"
 
 np.save("out/good_labels.npy", labels)
-
-
-

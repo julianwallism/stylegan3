@@ -49,7 +49,8 @@ hairBlondVector = np.load("./out/directions/"+numDirection+"/hair_blond.npy")
 hairBrownVector = np.load("./out/directions/"+numDirection+"/hair_brown.npy")
 hairGrayVector = np.load("./out/directions/"+numDirection+"/hair_gray.npy")
 
-ageVector = np.load("./out/directions/"+numDirection+"/age.npy")
+ageOldVector = np.load("./out/directions/"+numDirection+"/age_old.npy")
+ageYoungVector = np.load("./out/directions/"+numDirection+"/age_young.npy")
 genderVector = np.load("./out/directions/"+numDirection+"/sex.npy")
 beardVector = np.load("./out/directions/"+numDirection+"/beard.npy")
 glassesVector = np.load("./out/directions/"+numDirection+"/glasses.npy")
@@ -60,23 +61,23 @@ projectionTarget = ""
 
 # Order: happy, white, hairblack, bald, age, neutral, raceblack, blond, beard, gender, angry, asian, brown, glasses, sad, indian, gray, hat
 vectors = [
-    emotionHappyVector, raceWhiteVector, hairBlackVector, baldVector, ageVector,
-    emotionNeutralVector, raceBlackVector, hairBlondVector, beardVector, genderVector,
-    emotionAngryVector, raceAsianVector, hairBrownVector, glassesVector,
+    emotionHappyVector, raceWhiteVector, hairBlackVector, baldVector, ageYoungVector,
+    emotionNeutralVector, raceBlackVector, hairBlondVector, beardVector, ageOldVector,
+    emotionAngryVector, raceAsianVector, hairBrownVector, glassesVector, genderVector,
     emotionSurpriseVector, raceMidEastVector, hairGrayVector, hatVector
 ]
 
 text = [
-    "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Age:  ",
-    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Gender (♀ - | ♂ +) :  ",
-    "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ",
+    "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Young:  ",
+    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Old:",
+    "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ", "Gender (♀ - | ♂ +) :  ",
     "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  "
 ]
 
-nerfingValues = [20, 40, 40, 40, 40,
-                 20, 40, 40, 40, 40,
-                 20, 10, 40, 40,
-                 20, 5, 40, 5]
+originalNerfingValues = nerfingValues = [20, 40, 40, 40, 40,
+                                        20, 40, 40, 40, 40,
+                                        20, 10, 40, 40, 40,
+                                        20, 5, 40, 5]
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -97,7 +98,6 @@ class Ui_MainWindow(object):
         self.inputImage.setStyleSheet("border: 1px solid black;")
         self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
         self.inputImage.setScaledContents(True)
-        self.inputImage.setObjectName("inputImage")
 
         self.outputImage = QtWidgets.QLabel(self.centralwidget)
         self.outputImage.setGeometry(QtCore.QRect(542, 10, 512, 512))
@@ -105,7 +105,6 @@ class Ui_MainWindow(object):
         self.outputImage.setStyleSheet("border: 1px solid black;")
         self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
         self.outputImage.setScaledContents(True)
-        self.outputImage.setObjectName("outputImage")
 
 #-------------------------------------------------------------------------
 
@@ -121,9 +120,6 @@ class Ui_MainWindow(object):
             if i == 1: 
                 self.line.setGeometry(QtCore.QRect(0, 596, 1060, 1))
                 self.line.setStyleSheet("border: 2px solid black;")
-       
-            if i == 4:
-                self.line.setGeometry(QtCore.QRect(0, 800, 855, 16))
 
 
         for i in range(5):
@@ -161,7 +157,7 @@ class Ui_MainWindow(object):
         y_offset = 70
 
         for row in range(4):
-            num_columns = 5 if row < 2 else 4  # Adjust the number of columns for the third and fourth row
+            num_columns = 5 if row < 3 else 4  # Adjust the number of columns for the third and fourth row
             
             for col in range(num_columns):
                 x_label, x_slider = x_start_labels + col * x_offset, x_start_sliders + col * x_offset
@@ -207,48 +203,40 @@ class Ui_MainWindow(object):
 #-------------------------------------------------------------------------
        
         self.saveLatentCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveLatentCheckBox.setGeometry(QtCore.QRect(900, 820, 120, 20))
-        self.saveLatentCheckBox.setObjectName("saveLatentCheckBox")
+        self.saveLatentCheckBox.setGeometry(QtCore.QRect(960, 840, 120, 20))
 
-        self.saveVideoCheckBox1 = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveVideoCheckBox1.setGeometry(QtCore.QRect(900, 840, 150, 20))
-        self.saveVideoCheckBox1.setObjectName("saveVideoCheckBox1")
+        self.saveVideoCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.saveVideoCheckBox.setGeometry(QtCore.QRect(960, 860, 150, 20))
 
-        self.saveVideoCheckBox2 = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveVideoCheckBox2.setGeometry(QtCore.QRect(900, 860, 150, 20))
-        self.saveVideoCheckBox2.setObjectName("saveVideoCheckBox2")
+        self.resetAllCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+        self.resetAllCheckBox.setGeometry(QtCore.QRect(960, 810, 150, 20))
+
 
 #-------------------------------------------------------------------------
    
         self.openImageButton = QtWidgets.QPushButton(self.centralwidget)
         self.openImageButton.setGeometry(QtCore.QRect(125, 530, 131, 31))
-        self.openImageButton.setObjectName("openImageButton")
         self.openImageButton.clicked.connect(self.chooseImage)
 
         self.projectButton = QtWidgets.QPushButton(self.centralwidget)
         self.projectButton.setGeometry(QtCore.QRect(267, 530, 131, 31))
-        self.projectButton.setObjectName("projectButton")
         self.projectButton.clicked.connect(self.projectImage)
 
         self.loadLatentButton = QtWidgets.QPushButton(self.centralwidget)
         self.loadLatentButton.setGeometry(QtCore.QRect(779, 530, 131, 31))
-        self.loadLatentButton.setObjectName("loadLatentButton")
         self.loadLatentButton.clicked.connect(self.loadLatent)
 
         self.randomFaceButton = QtWidgets.QPushButton(self.centralwidget)
         self.randomFaceButton.setGeometry(QtCore.QRect(637, 530, 131, 31))
-        self.randomFaceButton.setObjectName("randomFaceButton")
         self.randomFaceButton.clicked.connect(self.randomFace)
 
         self.resetButton = QtWidgets.QPushButton(self.centralwidget)
-        self.resetButton.setGeometry(QtCore.QRect(900, 750, 131, 31))
-        self.resetButton.setObjectName("resetButton")
+        self.resetButton.setGeometry(QtCore.QRect(865, 810, 80, 28))
         self.resetButton.setStyleSheet("background-color: #fa1414;")
         self.resetButton.clicked.connect(self.resetAll)
 
         self.saveButton = QtWidgets.QPushButton(self.centralwidget)
-        self.saveButton.setGeometry(QtCore.QRect(900, 785, 131, 31))
-        self.saveButton.setObjectName("saveButton")
+        self.saveButton.setGeometry(QtCore.QRect(865, 845, 80, 28))
         self.saveButton.setStyleSheet("background-color: #8cfa5c;")
         self.saveButton.clicked.connect(self.saveImage)
 
@@ -271,14 +259,14 @@ class Ui_MainWindow(object):
             self.nerf_label_list[i].setText(_translate("MainWindow", str(nerfingValues[i])))
 
         self.saveLatentCheckBox.setText(_translate("MainWindow", "Save latent"))
-        self.saveVideoCheckBox1.setText(_translate("MainWindow", "Save video (1 by 1)"))
-        self.saveVideoCheckBox2.setText(_translate("MainWindow", "Save video (Mashup)"))
+        self.saveVideoCheckBox.setText(_translate("MainWindow", "Save video"))
+        self.resetAllCheckBox.setText(_translate("MainWindow", "Reset All"))
 
         self.projectButton.setText(_translate("MainWindow", "Project"))
         self.openImageButton.setText(_translate("MainWindow", "Open Image"))
         self.loadLatentButton.setText(_translate("MainWindow", "Load Latent"))
         self.randomFaceButton.setText(_translate("MainWindow", "Random Face"))
-        self.resetButton.setText(_translate("MainWindow", "Reset All"))
+        self.resetButton.setText(_translate("MainWindow", "Reset"))
         self.saveButton.setText(_translate("MainWindow", "Save Image"))
 
 ##########################################################################
@@ -286,15 +274,16 @@ class Ui_MainWindow(object):
 
     def resetAll(self):
         """ Resets all sliders, images and latent vector"""
-        global latentVector
-        global ogLatentVector
-        latentVector = ogLatentVector = np.random.randn(1, 512)
+        global latentVector, ogLatentVector, nerfingValues, originalNerfingValues
 
         for i in range(len(self.slider_list)):
             self.slider_list[i].setValue(0)
 
-        self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
-        self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
+        if self.resetAllCheckBox.isChecked():
+                    latentVector = ogLatentVector = np.random.randn(1, 512)
+                    self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
+                    self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
+                    nerfingValues = originalNerfingValues.copy()
 
 
     def labelChange(self):
@@ -340,7 +329,7 @@ class Ui_MainWindow(object):
                 if self.saveLatentCheckBox.isChecked():
                     np.save(SAVE_PATH + ".npy", latentVector)
 
-                if self.saveVideoCheckBox1.isChecked() or self.saveVideoCheckBox2.isChecked():
+                if self.saveVideoCheckBox.isChecked() or self.saveVideoCheckBox2.isChecked():
                     self.saveVideo(SAVE_PATH)
 
             except Exception as e:
@@ -354,43 +343,41 @@ class Ui_MainWindow(object):
         interpolation = []
         interpolation.append(ogLatentVector)
 
-        if self.saveVideoCheckBox1.isChecked():
 
-            for i in range(len(vectors)):
-                if self.slider_list[i].value() == 0:
-                    continue
-                baseVector = interpolation[-1]
-                value = self.slider_list[i].value()
-                step = -1 if value < 0 else 1
-                nth = np.divide(vectors[i], nerfingValues[i])
+        for i in range(len(vectors)):
+            if self.slider_list[i].value() == 0:
+                continue
+            baseVector = interpolation[-1]
+            value = self.slider_list[i].value()
+            step = -1 if value < 0 else 1
+            nth = np.divide(vectors[i], nerfingValues[i])
 
-                for j in range(0, value, step):
-                    aux = np.multiply(nth, j)
-                    auxVector = np.add(baseVector, aux)
-                    interpolation.append(auxVector)
+            for j in range(0, value, step):
+                aux = np.multiply(nth, j)
+                auxVector = np.add(baseVector, aux)
+                interpolation.append(auxVector)
 
-            out = cv2.VideoWriter(SAVE_PATH + "_1by1.mp4", cv2.VideoWriter_fourcc(*'MP4V'), fps, (1024, 1024))
-            for vector in interpolation:
-                img = self.latent2Image(vector)
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                out.write(img)
+        out = cv2.VideoWriter(SAVE_PATH + "_1by1.mp4", cv2.VideoWriter_fourcc(*'MP4V'), fps, (1024, 1024))
+        for vector in interpolation:
+            img = self.latent2Image(vector)
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            out.write(img)
 
-            out.release()
+        out.release()
 
-        if self.saveVideoCheckBox2.isChecked():
-            interpolation = [ogLatentVector]
-        
-            # METHOD 2 self.saveVideoCheckBox2       
-            for i in range(1, numSteps):
-                interpolation.append(ogLatentVector + (latentVector - ogLatentVector) * i / numSteps)
+        interpolation = [ogLatentVector]
+    
+        # METHOD 2 self.saveVideoCheckBox2       
+        for i in range(1, numSteps):
+            interpolation.append(ogLatentVector + (latentVector - ogLatentVector) * i / numSteps)
 
-            out = cv2.VideoWriter(SAVE_PATH + "_mashup.mp4", cv2.VideoWriter_fourcc(*'MP4V'), fps, (1024, 1024))
-            for vector in interpolation:
-                img = self.latent2Image(vector)
-                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-                out.write(img)
+        out = cv2.VideoWriter(SAVE_PATH + "_mashup.mp4", cv2.VideoWriter_fourcc(*'MP4V'), fps, (1024, 1024))
+        for vector in interpolation:
+            img = self.latent2Image(vector)
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            out.write(img)
 
-            out.release()
+        out.release()
 
         """ Save video of latent vector movement"""
 
@@ -400,8 +387,7 @@ class Ui_MainWindow(object):
     def loadLatent(self):
         """ Open file dialog and load latent vector"""
 
-        global latentVector
-        global ogLatentVector
+        global latentVector, ogLatentVector
 
         INPUT_PATH = QtWidgets.QFileDialog.getOpenFileName(None, "Window name", "", "NPY files (*.npy)")[0]
         if INPUT_PATH:
@@ -427,8 +413,7 @@ class Ui_MainWindow(object):
 
     def randomFace(self):
         """ Generate random latent vector and display image"""
-        global latentVector
-        global ogLatentVector
+        global latentVector, ogLatentVector
 
         # call projection functions     
         latentVector = ogLatentVector = np.random.randn(1, 512)
@@ -444,8 +429,7 @@ class Ui_MainWindow(object):
 
     def moveVector(self):
         """ Move latentVector in the direction of the attributes"""
-        global latentVector, ogLatentVector
-        global vectors
+        global latentVector, ogLatentVector, vectors
         
         latentVector = ogLatentVector
     

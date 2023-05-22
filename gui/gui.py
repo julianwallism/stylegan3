@@ -17,7 +17,8 @@ import torch
 import dnnlib
 import legacy
 
-from functools import partial
+# from qt_material import apply_stylesheet
+import qdarkstyle
 
 from projector import run_projection
 
@@ -84,8 +85,8 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1065, 880)
-        MainWindow.setFixedSize(1065, 880)
+        MainWindow.resize(1062, 880)
+        MainWindow.setFixedSize(1062, 880)
         MainWindow.setLayoutDirection(QtCore.Qt.LeftToRight)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -96,14 +97,12 @@ class Ui_MainWindow(object):
         self.inputImage = QtWidgets.QLabel(self.centralwidget)
         self.inputImage.setGeometry(QtCore.QRect(10, 10, 512, 512))
         self.inputImage.setText("")
-        self.inputImage.setStyleSheet("border: 1px solid black;")
         self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
         self.inputImage.setScaledContents(True)
 
         self.outputImage = QtWidgets.QLabel(self.centralwidget)
         self.outputImage.setGeometry(QtCore.QRect(542, 10, 512, 512))
         self.outputImage.setText("")
-        self.outputImage.setStyleSheet("border: 1px solid black;")
         self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
         self.outputImage.setScaledContents(True)
 
@@ -112,20 +111,18 @@ class Ui_MainWindow(object):
 
         for i in range(5):
             self.line = QtWidgets.QFrame(self.centralwidget)
-            self.line.setGeometry(QtCore.QRect(0, 520 + 70*i, 1060, 16))
+            self.line.setGeometry(QtCore.QRect(0, 520 + 70*i, 1062, 16))
             self.line.setFrameShape(QtWidgets.QFrame.HLine)
             self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
             if i == 0:
-                self.line.setGeometry(QtCore.QRect(0, 566, 1060, 1))
-                self.line.setStyleSheet("border: 2px solid black;")
+                self.line.setGeometry(QtCore.QRect(0, 566, 1062, 2))
             if i == 1: 
-                self.line.setGeometry(QtCore.QRect(0, 596, 1060, 1))
-                self.line.setStyleSheet("border: 2px solid black;")
+                self.line.setGeometry(QtCore.QRect(0, 596, 1062, 2))
 
 
-        for i in range(5):
+        for i in range(6):
             self.line = QtWidgets.QFrame(self.centralwidget)
-            self.line.setGeometry(QtCore.QRect(212 + 212*i, 567, 16, 313))
+            self.line.setGeometry(QtCore.QRect(212*i, 567, 16, 313))
             self.line.setFrameShape(QtWidgets.QFrame.VLine)
             self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
 
@@ -134,7 +131,7 @@ class Ui_MainWindow(object):
         column_names = ["Emotion", "Race", "Hair", "Complements", "Age and Gender"]
         for i in range(len(column_names)):
             self.label = QtWidgets.QLabel(self.centralwidget)
-            self.label.setGeometry(QtCore.QRect(35 + 212*i, 565, 150, 30))
+            self.label.setGeometry(QtCore.QRect(35 + 212*i, 572, 150, 20))
             self.label.setText(column_names[i])
             self.label.setAlignment(QtCore.Qt.AlignCenter)
             # bold
@@ -150,9 +147,9 @@ class Ui_MainWindow(object):
         self.down_button_list = []
         self.nerf_label_list = []
 
-        x_start_labels = 6
-        y_start_labels = 610
-        x_start_sliders = 25
+        x_start_labels = 20
+        y_start_labels = 605
+        x_start_sliders = 12
         y_start_sliders = 630
         x_offset = 212
         y_offset = 70
@@ -165,7 +162,7 @@ class Ui_MainWindow(object):
                 y_label, y_slider = y_start_labels + row * y_offset, y_start_sliders + row * y_offset
 
                 label = QtWidgets.QLabel(self.centralwidget)
-                label.setGeometry(QtCore.QRect(x_label, y_label, 200, 13))
+                label.setGeometry(QtCore.QRect(x_label, y_label, 150, 20))
                 label.setLayoutDirection(QtCore.Qt.LeftToRight)
                 label.setAlignment(QtCore.Qt.AlignCenter)
                 self.label_list.append(label)
@@ -182,19 +179,19 @@ class Ui_MainWindow(object):
                 self.slider_list.append(slider)
 
                 upArrow = QtWidgets.QToolButton(self.centralwidget)
-                upArrow.setGeometry(QtCore.QRect(x_slider+157, y_slider-9, 15, 15))
+                upArrow.setGeometry(QtCore.QRect(x_slider+154, y_slider-9, 15, 15))
                 upArrow.setArrowType(QtCore.Qt.UpArrow)
                 upArrow.clicked.connect(lambda _, idx=(row,col), value=1: self.arrowClicked(idx, value))
                 self.up_button_list.append(upArrow)
 
                 downArrow = QtWidgets.QToolButton(self.centralwidget)
-                downArrow.setGeometry(QtCore.QRect(x_slider+157, y_slider+9, 15, 15))
+                downArrow.setGeometry(QtCore.QRect(x_slider+154, y_slider+9, 15, 15))
                 downArrow.setArrowType(QtCore.Qt.DownArrow)
                 downArrow.clicked.connect(lambda _, idx=(row,col), value=-1: self.arrowClicked(idx, value))
                 self.down_button_list.append(downArrow)
 
                 label2 = QtWidgets.QLabel(self.centralwidget)
-                label2.setGeometry(QtCore.QRect(x_slider+168, y_slider, 30, 13))
+                label2.setGeometry(QtCore.QRect(x_slider+170, y_slider, 23, 13))
                 label2.setLayoutDirection(QtCore.Qt.LeftToRight)
                 label2.setAlignment(QtCore.Qt.AlignCenter)
                 label2.setText("0")
@@ -204,13 +201,13 @@ class Ui_MainWindow(object):
 #-------------------------------------------------------------------------
        
         self.saveLatentCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveLatentCheckBox.setGeometry(QtCore.QRect(960, 840, 120, 20))
+        self.saveLatentCheckBox.setGeometry(QtCore.QRect(960, 840, 100, 20))
 
         self.saveVideoCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveVideoCheckBox.setGeometry(QtCore.QRect(960, 860, 150, 20))
+        self.saveVideoCheckBox.setGeometry(QtCore.QRect(960, 860, 100, 20))
 
         self.resetAllCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.resetAllCheckBox.setGeometry(QtCore.QRect(960, 810, 150, 20))
+        self.resetAllCheckBox.setGeometry(QtCore.QRect(960, 810, 100, 20))
 
 #-------------------------------------------------------------------------
    
@@ -241,12 +238,12 @@ class Ui_MainWindow(object):
 
         self.resetButton = QtWidgets.QPushButton(self.centralwidget)
         self.resetButton.setGeometry(QtCore.QRect(865, 810, 80, 28))
-        self.resetButton.setStyleSheet("background-color: #fa1414;")
+        self.resetButton.setStyleSheet("background-color: #f75252; color: #000000" )
         self.resetButton.clicked.connect(self.resetAll)
 
         self.saveButton = QtWidgets.QPushButton(self.centralwidget)
         self.saveButton.setGeometry(QtCore.QRect(865, 845, 80, 28))
-        self.saveButton.setStyleSheet("background-color: #8cfa5c;")
+        self.saveButton.setStyleSheet("background-color: #bbfaa0; color: #000000")
         self.saveButton.clicked.connect(self.saveImage)
 
 
@@ -275,6 +272,7 @@ class Ui_MainWindow(object):
         self.openImageButton.setText(_translate("MainWindow", "Open Image"))
         self.loadLatentButton.setText(_translate("MainWindow", "Load Latent"))
         self.randomFaceButton.setText(_translate("MainWindow", "Random Face"))
+
         self.resetButton.setText(_translate("MainWindow", "Reset"))
         self.saveButton.setText(_translate("MainWindow", "Save Image"))
 
@@ -341,7 +339,7 @@ class Ui_MainWindow(object):
                 if self.saveLatentCheckBox.isChecked():
                     np.save(SAVE_PATH + ".npy", latentVector)
 
-                if self.saveVideoCheckBox.isChecked() or self.saveVideoCheckBox2.isChecked():
+                if self.saveVideoCheckBox.isChecked():
                     self.saveVideo(SAVE_PATH)
 
             except Exception as e:
@@ -473,6 +471,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()

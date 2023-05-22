@@ -74,11 +74,12 @@ text = [
     "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  "
 ]
 
-originalNerfingValues = nerfingValues = [20, 40, 40, 40, 40,
+originalNerfingValues = [20, 40, 40, 40, 40,
                                         20, 40, 40, 40, 40,
                                         20, 10, 40, 40, 40,
                                         20, 5, 40, 5]
 
+nerfingValues = originalNerfingValues.copy()
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
 
@@ -211,7 +212,6 @@ class Ui_MainWindow(object):
         self.resetAllCheckBox = QtWidgets.QCheckBox(self.centralwidget)
         self.resetAllCheckBox.setGeometry(QtCore.QRect(960, 810, 150, 20))
 
-
 #-------------------------------------------------------------------------
    
         self.openImageButton = QtWidgets.QPushButton(self.centralwidget)
@@ -221,6 +221,15 @@ class Ui_MainWindow(object):
         self.projectButton = QtWidgets.QPushButton(self.centralwidget)
         self.projectButton.setGeometry(QtCore.QRect(267, 530, 131, 31))
         self.projectButton.clicked.connect(self.projectImage)
+
+        self.projectStepsLabel = QtWidgets.QLabel(self.centralwidget)
+        self.projectStepsLabel.setGeometry(QtCore.QRect(400, 535, 50, 20))
+        self.projectStepsLabel.setText("Steps:")
+
+        self.projectStepsLineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.projectStepsLineEdit.setGeometry(QtCore.QRect(440, 535, 50, 20))
+        self.projectStepsLineEdit.setValidator(QtGui.QIntValidator())
+        self.projectStepsLineEdit.setText("100")
 
         self.loadLatentButton = QtWidgets.QPushButton(self.centralwidget)
         self.loadLatentButton.setGeometry(QtCore.QRect(779, 530, 131, 31))
@@ -279,11 +288,14 @@ class Ui_MainWindow(object):
         for i in range(len(self.slider_list)):
             self.slider_list[i].setValue(0)
 
+
         if self.resetAllCheckBox.isChecked():
-                    latentVector = ogLatentVector = np.random.randn(1, 512)
-                    self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
-                    self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
-                    nerfingValues = originalNerfingValues.copy()
+            latentVector = ogLatentVector = np.random.randn(1, 512)
+            self.inputImage.setPixmap(QtGui.QPixmap("gui/images/input.png"))
+            self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
+            nerfingValues = originalNerfingValues
+            for i in range(len(self.nerf_label_list)):
+                self.nerf_label_list[i].setText(str(nerfingValues[i]))
 
 
     def labelChange(self):
@@ -297,7 +309,7 @@ class Ui_MainWindow(object):
         global nerfingValues
         """ Increase nerfing value of slider by 1"""
         row, col = index
-        index = row * 4 + col     
+        index = row * 5 + col     
         newValue = nerfingValues[index] + value
         if newValue == 0:
             nerfingValues[index] = 1   
@@ -403,8 +415,8 @@ class Ui_MainWindow(object):
         """ Project input image onto latent space"""
         global ogLatentVector, latentVector, projectionTarget
 
-        print(projectionTarget)
-        ogLatentVector = run_projection(G=G, target_fname=projectionTarget, num_steps=1000, device=device)
+        steps = self.projectStepsLineEdit.text()
+        ogLatentVector = run_projection(G=G, target_fname=projectionTarget, num_steps=int(steps), device=device)
 
         img = self.latent2Image(ogLatentVector)
         qImg = QtGui.QImage(img.data.tobytes(), 1024, 1024, 3072, QtGui.QImage.Format_RGB888)

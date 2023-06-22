@@ -78,7 +78,8 @@ def generate_images(
 
         if w_space:
             w = G.mapping(z, None)
-            vector_seeds.append(w.cpu().numpy())
+            w = w[0][0].unsqueeze(0).cpu().numpy()
+            vector_seeds.append(w)
         else:
             vector_seeds.append(z.cpu().numpy())
 

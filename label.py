@@ -26,7 +26,7 @@ print("Extractors loaded")
 model_gender = AutoModelForImageClassification.from_pretrained("rizvandwiki/gender-classification-2")
 model_age = AutoModelForImageClassification.from_pretrained("nateraw/vit-age-classifier")
 model_eyeglasses = AutoModelForImageClassification.from_pretrained("youngp5/eyeglasses_detection")
-model_emotion_2 = AutoModelForImageClassification.from_pretrained("jayanta/google-vit-base-patch16-224-cartoon-emotion-detection")
+model_emotion_1 = AutoModelForImageClassification.from_pretrained("jayanta/google-vit-base-patch16-224-cartoon-emotion-detection")
 model_emotion_2 = AutoModelForImageClassification.from_pretrained("Rajaram1996/FacialEmoRecog")
 models = [model_gender, model_age, model_eyeglasses, model_emotion_2, model_emotion_2]
 
@@ -81,8 +81,7 @@ print("Transfer Learning models loaded")
 
 #########################################################################
 
-# labels = []
-labels = np.load("out/good_labels_orig.npy")
+labels = []
 
 # loop through all images in out/images and pass them through the model
 image_dir = "out/images"
@@ -91,7 +90,7 @@ batch_size = 100
 
 num_images = 20000
 
-for batch_start in tqdm(range(10000, num_images, batch_size)):
+for batch_start in tqdm(range(0, num_images, batch_size)):
     batch_end = min(batch_start + batch_size, num_images)
     batch_size_actual = batch_end - batch_start
 

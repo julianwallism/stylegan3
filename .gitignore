@@ -5,3 +5,5 @@ diagrams/*
 __pycache__
 ffhq1024.pkl
 models/*
+FID/
+resultados/

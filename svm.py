@@ -11,9 +11,9 @@ mapping_age = {
     '3-9': 0,
     '10-19': 0,
     '20-29': 0,
-    '30-39': 0,
-    '40-49': 0,
-    '50-59': 0,
+    '30-39': 1,
+    '40-49': 1,
+    '50-59': 1,
     '60-69': 1,
     'more than 70': 1
 }
@@ -78,4 +78,4 @@ svm = LinearSVC(dual=False)
 svm.fit(seeds, current)
 print(svm.score(seeds, current))
 
-np.save("out/directions/20k/age_old.npy", svm.coef_.ravel())
+np.save("out/directions/20k/age_thirty.npy", svm.coef_.ravel())

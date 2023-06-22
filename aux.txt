@@ -1,0 +1,90 @@
+
+\subsubsection{Enfado}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_angry_1.jpg}
+    \caption{Imagen 1: Enfado}
+    \label{fig:angry_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_angry_2.jpg}
+    \caption{Imagen 2: Enfado}
+    \label{fig:angry_2}
+\end{figure}
+
+\subsubsection{Felicidad}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_happy_1.jpg}
+    \caption{Imagen 1: Felicidad}
+    \label{fig:happy_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_happy_2.jpg}
+    \caption{Imagen 2: Felicidad}
+    \label{fig:happy_2}
+\end{figure}
+
+\subsubsection{Miedo}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_fear_1.jpg}
+    \caption{Imagen 1: Miedo}
+    \label{fig:fear_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_fear_2.jpg}
+    \caption{Imagen 2: Miedo}
+    \label{fig:fear_2}
+\end{figure}
+
+\subsubsection{Neutral}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_neutral_1.jpg}
+    \caption{Imagen 1: Neutral}
+    \label{fig:neutral_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_neutral_2.jpg}
+    \caption{Imagen 2: Neutral}
+    \label{fig:neutral_2}
+\end{figure}
+
+\subsubsection{Sorpresa}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_surprise_1.jpg}
+    \caption{Imagen 1: Sorpresa}
+    \label{fig:surprise_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_surprise_2.jpg}
+    \caption{Imagen 2: Sorpresa}
+    \label{fig:surprise_2}
+\end{figure}
+
+\subsubsection{Tristeza}
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_sad_1.jpg}
+    \caption{Imagen 1: Tristeza}
+    \label{fig:sad_1}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/collage/emotions/emotion_tiny_sad_2.jpg}
+    \caption{Imagen 2: Tristeza}
+    \label{fig:sad_2}
+\end{figure}

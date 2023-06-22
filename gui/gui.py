@@ -402,7 +402,6 @@ class Ui_MainWindow(object):
         INPUT_PATH = QtWidgets.QFileDialog.getOpenFileName(None, "Window name", "", "NPY files (*.npy)")[0]
         if INPUT_PATH:
             ogLatentVector = np.load(INPUT_PATH)
-            print(ogLatentVector.shape)
             latentVector = ogLatentVector
             img = self.latent2Image(ogLatentVector)
             qImg = QtGui.QImage(img.data.tobytes(), 1024, 1024, 3072, QtGui.QImage.Format_RGB888)
@@ -426,6 +425,7 @@ class Ui_MainWindow(object):
         global latentVector, ogLatentVector
 
         # call projection functions     
+        # latentVector = ogLatentVector = np.load("./PRUEBA2.npy")
         latentVector = ogLatentVector = np.random.randn(1, 512)
 
         img = self.latent2Image(ogLatentVector)

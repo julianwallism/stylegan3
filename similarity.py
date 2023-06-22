@@ -1,9 +1,17 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.metrics.pairwise import cosine_similarity
 
-directory = ["10k", "20k"]
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+
+directory = ["20k"]
+
+
+cmap = ListedColormap(sns.color_palette("coolwarm", n_colors=7))  # Example colors
+
+# cmap = "coolwarm"
 
 for dir in directory:
     vectors = []
@@ -22,7 +30,7 @@ for dir in directory:
     similarity_matrix = cosine_similarity(vectors)
     print(type(similarity_matrix))
 
-    plt.imshow(similarity_matrix, cmap = "coolwarm",interpolation='nearest')
+    plt.imshow(similarity_matrix, cmap = cmap, interpolation='nearest', vmin=-1, vmax=1)
     plt.colorbar()
 
     # Set the axis labels using file names
@@ -60,7 +68,7 @@ sorted_similarity_matrix = all_similarity_matrix[sorted_indices][:, sorted_indic
 # Increase the figure size
 plt.figure(figsize=(12, 10))
 
-plt.imshow(sorted_similarity_matrix, cmap="coolwarm", interpolation='nearest')
+plt.imshow(sorted_similarity_matrix, cmap=cmap, interpolation='nearest', vmin=-1, vmax=1)
 plt.colorbar()
 
 plt.xticks(range(len(sorted_file_names)), sorted_file_names, rotation=90)

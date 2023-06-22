@@ -51,7 +51,8 @@ hairBrownVector = np.load("./out/"+numDirection+"/hair_brown.npy")
 hairGrayVector = np.load("./out/"+numDirection+"/hair_gray.npy")
 
 ageOldVector = np.load("./out/"+numDirection+"/age_old.npy")
-ageYoungVector = np.load("./out/"+numDirection+"/age_young.npy")
+ageYoungVector = np.load("./out/"+numDirection+"/age_thirty.npy")
+ageBabyVector = np.load("./out/"+numDirection+"/age_young.npy")
 genderVector = np.load("./out/"+numDirection+"/sex.npy")
 beardVector = np.load("./out/"+numDirection+"/beard.npy")
 glassesVector = np.load("./out/"+numDirection+"/glasses.npy")
@@ -62,23 +63,23 @@ projectionTarget = ""
 
 # Order: happy, white, hairblack, bald, age, neutral, raceblack, blond, beard, gender, angry, asian, brown, glasses, sad, indian, gray, hat
 vectors = [
-    emotionHappyVector, raceWhiteVector, hairBlackVector, baldVector, ageYoungVector,
-    emotionNeutralVector, raceBlackVector, hairBlondVector, beardVector, ageOldVector,
-    emotionAngryVector, raceAsianVector, hairBrownVector, glassesVector, genderVector,
-    emotionSurpriseVector, raceMidEastVector, hairGrayVector, hatVector
+    emotionHappyVector, raceWhiteVector, hairBlackVector, baldVector, ageBabyVector,
+    emotionNeutralVector, raceBlackVector, hairBlondVector, beardVector, ageYoungVector,
+    emotionAngryVector, raceAsianVector, hairBrownVector, glassesVector, ageOldVector,
+    emotionSurpriseVector, raceMidEastVector, hairGrayVector, hatVector, genderVector
 ]
 
 text = [
-    "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Young:  ",
-    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Old:  ",
-    "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ", "Gender (♀ - | ♂ +) :  ",
-    "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  "
+    "Happy:  ", "White:  ", "Hair Black:  ", "Bald:  ", "Baby:  ",
+    "Neutral:  ", "Race Black:  ", "Hair Blond:  ", "Beard:  ", "Young:  ",
+    "Angry:  ", "Asian:  ", "Hair Brown:  ", "Glasses:  ", "Old:  ",
+    "Surprise:  ", "MidEast:  ", "Hair Gray:  ", "Hat:  ", "Gender (♀ - | ♂ +) :  "
 ]
 
 originalNerfingValues = [20, 40, 40, 40, 40,
-                                        20, 40, 40, 40, 40,
-                                        20, 10, 40, 40, 40,
-                                        20, 5, 40, 5]
+                        20, 40, 40, 40, 40,
+                        20, 10, 40, 40, 40,
+                        20, 5, 40, 5, 40]
 
 nerfingValues = originalNerfingValues.copy()
 class Ui_MainWindow(object):
@@ -155,9 +156,9 @@ class Ui_MainWindow(object):
         y_offset = 70
 
         for row in range(4):
-            num_columns = 5 if row < 3 else 4  # Adjust the number of columns for the third and fourth row
+            # num_columns = 5 if row < 3 else 4  # Adjust the number of columns for the third and fourth row
             
-            for col in range(num_columns):
+            for col in range(5):
                 x_label, x_slider = x_start_labels + col * x_offset, x_start_sliders + col * x_offset
                 y_label, y_slider = y_start_labels + row * y_offset, y_start_sliders + row * y_offset
 
@@ -168,7 +169,7 @@ class Ui_MainWindow(object):
                 self.label_list.append(label)
 
                 slider = QtWidgets.QSlider(self.centralwidget)
-                slider.setGeometry(QtCore.QRect(x_slider, y_slider, 150, 22))
+                slider.setGeometry(QtCore.QRect(x_slider, y_slider, 140, 22))
                 slider.setOrientation(QtCore.Qt.Horizontal)
                 slider.setPageStep(1)
                 slider.setTickInterval(5)
@@ -179,19 +180,19 @@ class Ui_MainWindow(object):
                 self.slider_list.append(slider)
 
                 upArrow = QtWidgets.QToolButton(self.centralwidget)
-                upArrow.setGeometry(QtCore.QRect(x_slider+154, y_slider-9, 15, 15))
+                upArrow.setGeometry(QtCore.QRect(x_slider+145, y_slider-9, 15, 15))
                 upArrow.setArrowType(QtCore.Qt.UpArrow)
-                upArrow.clicked.connect(lambda _, idx=(row,col), value=1: self.arrowClicked(idx, value))
+                upArrow.clicked.connect(lambda _, idx=(row,col), value=-1: self.arrowClicked(idx, value))
                 self.up_button_list.append(upArrow)
 
                 downArrow = QtWidgets.QToolButton(self.centralwidget)
-                downArrow.setGeometry(QtCore.QRect(x_slider+154, y_slider+9, 15, 15))
+                downArrow.setGeometry(QtCore.QRect(x_slider+145, y_slider+9, 15, 15))
                 downArrow.setArrowType(QtCore.Qt.DownArrow)
-                downArrow.clicked.connect(lambda _, idx=(row,col), value=-1: self.arrowClicked(idx, value))
+                downArrow.clicked.connect(lambda _, idx=(row,col), value=1: self.arrowClicked(idx, value))
                 self.down_button_list.append(downArrow)
 
                 label2 = QtWidgets.QLabel(self.centralwidget)
-                label2.setGeometry(QtCore.QRect(x_slider+170, y_slider, 23, 13))
+                label2.setGeometry(QtCore.QRect(x_slider+165, y_slider, 30, 13))
                 label2.setLayoutDirection(QtCore.Qt.LeftToRight)
                 label2.setAlignment(QtCore.Qt.AlignCenter)
                 label2.setText("0")
@@ -201,48 +202,57 @@ class Ui_MainWindow(object):
 #-------------------------------------------------------------------------
        
         self.saveLatentCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveLatentCheckBox.setGeometry(QtCore.QRect(960, 840, 100, 20))
+        self.saveLatentCheckBox.setGeometry(QtCore.QRect(718, 522, 100, 20)) 
 
         self.saveVideoCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.saveVideoCheckBox.setGeometry(QtCore.QRect(960, 860, 100, 20))
+        self.saveVideoCheckBox.setGeometry(QtCore.QRect(718, 542, 100, 20))
 
         self.resetAllCheckBox = QtWidgets.QCheckBox(self.centralwidget)
-        self.resetAllCheckBox.setGeometry(QtCore.QRect(960, 810, 100, 20))
+        self.resetAllCheckBox.setGeometry(QtCore.QRect(928, 535, 100, 20))
+
+        # self.saveLatentCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+        # self.saveLatentCheckBox.setGeometry(QtCore.QRect(718, 535, 100, 20)) #865
+
+        # self.saveVideoCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+        # self.saveVideoCheckBox.setGeometry(QtCore.QRect(928, 542, 100, 20))
+
+        # self.resetAllCheckBox = QtWidgets.QCheckBox(self.centralwidget)
+        # self.resetAllCheckBox.setGeometry(QtCore.QRect(928, 522, 100, 20))
 
 #-------------------------------------------------------------------------
    
-        self.openImageButton = QtWidgets.QPushButton(self.centralwidget)
-        self.openImageButton.setGeometry(QtCore.QRect(125, 530, 131, 31))
-        self.openImageButton.clicked.connect(self.chooseImage)
+        # self.openImageButton = QtWidgets.QPushButton(self.centralwidget)
+        # self.openImageButton.setGeometry(QtCore.QRect(125, 530, 131, 31))
+        # self.openImageButton.clicked.connect(self.chooseImage)
 
-        self.projectButton = QtWidgets.QPushButton(self.centralwidget)
-        self.projectButton.setGeometry(QtCore.QRect(267, 530, 131, 31))
-        self.projectButton.clicked.connect(self.projectImage)
+        # self.projectButton = QtWidgets.QPushButton(self.centralwidget)
+        # self.projectButton.setGeometry(QtCore.QRect(267, 530, 131, 31))
+        # self.projectButton.clicked.connect(self.projectImage)
 
-        self.projectStepsLabel = QtWidgets.QLabel(self.centralwidget)
-        self.projectStepsLabel.setGeometry(QtCore.QRect(400, 535, 50, 20))
-        self.projectStepsLabel.setText("Steps:")
+        # self.projectStepsLabel = QtWidgets.QLabel(self.centralwidget)
+        # self.projectStepsLabel.setGeometry(QtCore.QRect(400, 535, 50, 20))
+        # self.projectStepsLabel.setText("Steps:")
 
-        self.projectStepsLineEdit = QtWidgets.QLineEdit(self.centralwidget)
-        self.projectStepsLineEdit.setGeometry(QtCore.QRect(440, 535, 50, 20))
-        self.projectStepsLineEdit.setValidator(QtGui.QIntValidator())
-        self.projectStepsLineEdit.setText("100")
+        # self.projectStepsLineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        # self.projectStepsLineEdit.setGeometry(QtCore.QRect(440, 535, 50, 20))
+        # self.projectStepsLineEdit.setValidator(QtGui.QIntValidator())
+        # self.projectStepsLineEdit.setText("100")
 
         self.loadLatentButton = QtWidgets.QPushButton(self.centralwidget)
-        self.loadLatentButton.setGeometry(QtCore.QRect(779, 530, 131, 31))
+        self.loadLatentButton.setGeometry(QtCore.QRect(125, 528, 131, 31)) #779
         self.loadLatentButton.clicked.connect(self.loadLatent)
 
         self.randomFaceButton = QtWidgets.QPushButton(self.centralwidget)
-        self.randomFaceButton.setGeometry(QtCore.QRect(637, 530, 131, 31))
+        self.randomFaceButton.setGeometry(QtCore.QRect(280, 528, 131, 31)) #637
         self.randomFaceButton.clicked.connect(self.randomFace)
 
         self.resetButton = QtWidgets.QPushButton(self.centralwidget)
-        self.resetButton.setGeometry(QtCore.QRect(865, 810, 80, 28))
+        self.resetButton.setGeometry(QtCore.QRect(840, 530, 80, 28))
         self.resetButton.setStyleSheet("background-color: #f75252; color: #000000" )
         self.resetButton.clicked.connect(self.resetAll)
 
         self.saveButton = QtWidgets.QPushButton(self.centralwidget)
-        self.saveButton.setGeometry(QtCore.QRect(865, 845, 80, 28))
+        self.saveButton.setGeometry(QtCore.QRect(630, 530, 80, 28))
         self.saveButton.setStyleSheet("background-color: #bbfaa0; color: #000000")
         self.saveButton.clicked.connect(self.saveImage)
 
@@ -262,14 +272,14 @@ class Ui_MainWindow(object):
             self.label_list[i].setText(_translate("MainWindow", text[i] + str(self.slider_list[i].value())))
         
         for i in range(len(self.nerf_label_list)):
-            self.nerf_label_list[i].setText(_translate("MainWindow", str(nerfingValues[i])))
+            self.nerf_label_list[i].setText(_translate("MainWindow", str(round(self.slider_list[i].value()/nerfingValues[i],2))))
 
         self.saveLatentCheckBox.setText(_translate("MainWindow", "Save latent"))
         self.saveVideoCheckBox.setText(_translate("MainWindow", "Save video"))
         self.resetAllCheckBox.setText(_translate("MainWindow", "Reset All"))
 
-        self.projectButton.setText(_translate("MainWindow", "Project"))
-        self.openImageButton.setText(_translate("MainWindow", "Open Image"))
+        # self.projectButton.setText(_translate("MainWindow", "Project"))
+        # self.openImageButton.setText(_translate("MainWindow", "Open Image"))
         self.loadLatentButton.setText(_translate("MainWindow", "Load Latent"))
         self.randomFaceButton.setText(_translate("MainWindow", "Random Face"))
 
@@ -293,13 +303,14 @@ class Ui_MainWindow(object):
             self.outputImage.setPixmap(QtGui.QPixmap("gui/images/output.png"))
             nerfingValues = originalNerfingValues
             for i in range(len(self.nerf_label_list)):
-                self.nerf_label_list[i].setText(str(nerfingValues[i]))
+                self.nerf_label_list[i].setText(str(round(self.slider_list[i].value()/nerfingValues[i],2)))
 
 
     def labelChange(self):
         """ Update labels with slider values"""
         for i in range(len(self.label_list)):
             self.label_list[i].setText(text[i] + str(self.slider_list[i].value()))
+            self.nerf_label_list[i].setText(str(round(self.slider_list[i].value()/nerfingValues[i],2)))
       
 #-------------------------------------------------------------------------
 
@@ -313,7 +324,7 @@ class Ui_MainWindow(object):
             nerfingValues[index] = 1   
         else:
             nerfingValues[index] += value
-        self.nerf_label_list[index].setText(str(nerfingValues[index]))
+        self.nerf_label_list[index].setText(str(round(self.slider_list[index].value()/nerfingValues[index],2)))
         self.moveVector()
 
 #-------------------------------------------------------------------------
@@ -347,7 +358,7 @@ class Ui_MainWindow(object):
 
     def saveVideo(self, SAVE_PATH):
         global latentVector, ogLatentVector
-
+        print("saving video")
         numSteps = sum([abs(self.slider_list[i].value()) for i in range(len(self.slider_list))])
         fps = numSteps / 5
         interpolation = []
@@ -390,7 +401,7 @@ class Ui_MainWindow(object):
         out.release()
 
         """ Save video of latent vector movement"""
-
+        print("saved video")
 
 #-------------------------------------------------------------------------
 # Latent Generation Functions

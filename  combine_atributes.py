@@ -16,29 +16,36 @@ with dnnlib.util.open_url("models/ffhq1024.pkl") as f:
 
 # alphas = [-2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5]
 num_steps = 5
+start_value = 0
 
-end_value1 = 12.5
-start_value1 = 0
-step_size1 = (end_value1 - start_value1) / (num_steps-1)
+end_value1 = -7
+step_size1 = (end_value1 - start_value) / (num_steps-1)
 
-alphas1 = np.arange(start_value1, end_value1 + step_size1, step_size1).tolist()
+alphas1 = np.arange(start_value, end_value1 + step_size1, step_size1).tolist()
 
-end_value2 = 12.5
-start_value2 = 0
-step_size2 = (end_value2 - start_value2) / (num_steps-1)
+end_value2 = 5
+step_size2 = (end_value2 - start_value) / (num_steps-1)
 
-alphas2 = np.arange(start_value2, end_value2 + step_size2, step_size2).tolist()
-alphas = [alphas1, alphas2]
+alphas2 = np.arange(start_value, end_value2 + step_size2, step_size2).tolist()
 
-image = "prueba4.npy"
-vectors = ["out/directions/w_space/emotion_happy_1.npy", "out/directions/w_space/glasses.npy"]
+end_value3 = 2.5
+step_size3 = (end_value3 - start_value) / (num_steps-1)
+
+alphas3 = np.arange(start_value, end_value3 + step_size3, step_size3).tolist()
+
+alphas = [alphas1, alphas2, alphas3]
+
+image = "bald_4.npy"
+vectors = ["out/directions/w_space/hair_bald.npy", "out/directions/w_space/beard.npy", "out/directions/w_space/race_black.npy"]
+
 
 latent = np.load(image)
 vector1 = np.load(vectors[0])
 vector2 = np.load(vectors[1])
+vector3 = np.load(vectors[2])
 edited_vector = []
 for i in range(len(alphas[0])):
-    aux = latent + alphas[0][i] * vector1 + alphas[1][i] * vector2
+    aux = latent + alphas[0][i] * vector1 + alphas[1][i] * vector2 + alphas[2][i] * vector3
     edited_vector.append(aux)
 
 
@@ -57,5 +64,5 @@ for idx, vector in enumerate(edited_vector):
 
     axs[idx].imshow(img)
 
-plt.savefig(f"resultados/combination/glasses_happy.jpg", bbox_inches='tight', pad_inches=0)
+plt.savefig(f"resultados/combination/hair_beard_black.jpg", bbox_inches='tight', pad_inches=0)
 plt.close()

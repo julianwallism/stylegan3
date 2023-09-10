@@ -91,10 +91,10 @@ def generate_images(
     vector_seeds = np.concatenate(vector_seeds, axis=0)
     if(append_latent):
         print("Appending latent vector to file...")
-        if(os.path.exists(f'{outdir_seeds}/seeds2.npy')):
-            old_vector_seeds = np.load(f'{outdir_seeds}/seeds2.npy')
+        if(os.path.exists(f'{outdir_seeds}/seeds.npy')):
+            old_vector_seeds = np.load(f'{outdir_seeds}/seeds.npy')
             vector_seeds = np.concatenate((old_vector_seeds, vector_seeds), axis=0)
-    np.save(f'{outdir_seeds}/seeds2.npy', vector_seeds)
+    np.save(f'{outdir_seeds}/seeds.npy', vector_seeds)
 
 #----------------------------------------------------------------------------
 

@@ -1,14 +1,23 @@
 from sklearn.svm import LinearSVC
 import numpy as np
+import os
 
-seeds = np.load('out/seeds_20k_w.npy')
-labels = np.load('out/labels_20k.npy', allow_pickle=True)
+""" Script to train SVMs for each class and extract the normal vector to the hyperplane """
 
-# Modify labels for 'age' according to the new classes
+seeds = np.load('out/seeds_w.npy')
+labels = np.load('out/labels.npy', allow_pickle=True)
+path = 'out/directions2'
+
+os.makedirs(path, exist_ok=True)
+
+###############################################################
+
+# Do any data work on the classes here
 labels[:, 2][np.isin(labels[:, 2], ['0-2', '3-9'])] = '0-9'
 labels[:, 2][np.isin(labels[:, 2], ['60-69', 'more than 70'])] = '60+'
 labels[:, 2][~np.isin(labels[:, 2], ['0-9', '60+'])] = 'other'
 
+###############################################################
 # List of all label mappings
 label_mappings = [
     {
@@ -58,6 +67,8 @@ label_mappings = [
     }
 ]
 
+###############################################################
+
 for label_mapping in label_mappings:
     name = label_mapping['name']
     values = label_mapping['values']
@@ -78,7 +89,7 @@ for label_mapping in label_mappings:
         print(f"Score for {name}: {score}")
 
         # Save the coefficient
-        np.save(f"out/PRUEBA/{name}.npy", svm.coef_.ravel())
+        np.save(f"{path}/{name}.npy", svm.coef_.ravel())
 
     else:
         for value in values:
@@ -98,4 +109,4 @@ for label_mapping in label_mappings:
             print(f"Score for {name} - {value}: {score}")
 
             # Save the coefficient
-            np.save(f"out/PRUEBA/{name}_{value}.npy", svm.coef_.ravel())
+            np.save(f"{path}/{name}_{value}.npy", svm.coef_.ravel())

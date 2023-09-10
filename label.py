@@ -10,7 +10,9 @@ from torchvision.models import efficientnet_v2_s
 
 from transformers import AutoFeatureExtractor, AutoModelForImageClassification
 
-# from deepface import DeepFace
+
+""" Script to label syntetic images using pretrained models """
+
 
 #########################################################################
 # # HUGGINGFACE MODELS
@@ -44,7 +46,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 checkpoint_path_hair = 'models/hair_ckpt.pt'
 
 model_hair = efficientnet_v2_s(pretrained=True, num_classes=1000)
-num_classes = 5  # Assuming you have 4 hair color classes
+num_classes = 5  # Assuming you have 5 hair color classes
 model_hair.classifier[1] = nn.Linear(model_hair.classifier[1].in_features, num_classes)
 model_hair.load_state_dict(torch.load(checkpoint_path_hair))
 model_hair = model_hair.to(device)
@@ -154,4 +156,4 @@ for batch_start in tqdm(range(0, num_images, batch_size)):
     for j in range(batch_size_actual):
         labels[batch_start + j][9] = "nan"
 
-np.save("out/good_labels.npy", labels)
+np.save("out/labels.npy", labels)

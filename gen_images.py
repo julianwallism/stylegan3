@@ -65,7 +65,7 @@ def generate_images(
         G = legacy.load_network_pkl(f)['G_ema'].to(device) # type: ignore
 
     os.makedirs(outdir_img, exist_ok=True)
-    os.makedirs(outdir_seeds, exist_ok=True)
+    # os.makedirs(outdir_seeds, exist_ok=True)
 
     # Labels.
     label = torch.zeros([1, G.c_dim], device=device)
@@ -88,13 +88,13 @@ def generate_images(
         PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir_img}/seed{seed:04d}.png')
 
     
-    vector_seeds = np.concatenate(vector_seeds, axis=0)
-    if(append_latent):
-        print("Appending latent vector to file...")
-        if(os.path.exists(f'{outdir_seeds}/seeds.npy')):
-            old_vector_seeds = np.load(f'{outdir_seeds}/seeds.npy')
-            vector_seeds = np.concatenate((old_vector_seeds, vector_seeds), axis=0)
-    np.save(f'{outdir_seeds}/seeds.npy', vector_seeds)
+    # vector_seeds = np.concatenate(vector_seeds, axis=0)
+    # if(append_latent):
+    #     print("Appending latent vector to file...")
+    #     if(os.path.exists(f'{outdir_seeds}/seeds.npy')):
+    #         old_vector_seeds = np.load(f'{outdir_seeds}/seeds.npy')
+    #         vector_seeds = np.concatenate((old_vector_seeds, vector_seeds), axis=0)
+    # np.save(f'{outdir_seeds}/seeds.npy', vector_seeds)
 
 #----------------------------------------------------------------------------
 

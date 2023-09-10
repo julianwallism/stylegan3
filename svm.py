@@ -1,81 +1,101 @@
-
+from sklearn.svm import LinearSVC
 import numpy as np
 
-from sklearn.svm import LinearSVC
-
-seeds = np.load('out/seeds_20k.npy')
+seeds = np.load('out/seeds_20k_w.npy')
 labels = np.load('out/labels_20k.npy', allow_pickle=True)
 
-mapping_age = {
-    '0-2': 0,
-    '3-9': 0,
-    '10-19': 0,
-    '20-29': 0,
-    '30-39': 1,
-    '40-49': 1,
-    '50-59': 1,
-    '60-69': 1,
-    'more than 70': 1
-}
+# Modify labels for 'age' according to the new classes
+labels[:, 2][np.isin(labels[:, 2], ['0-2', '3-9'])] = '0-9'
+labels[:, 2][np.isin(labels[:, 2], ['60-69', 'more than 70'])] = '60+'
+labels[:, 2][~np.isin(labels[:, 2], ['0-9', '60+'])] = 'other'
 
-mapping_glasses = {
-    'glasses': 1,
-    'no%20glasses': 0
-}
+# List of all label mappings
+label_mappings = [
+    {
+        'name': 'sex',
+        'index': 1,
+        'values': ['male', 'female'],
+    },
+    {
+        'name': 'age',
+        'index': 2,
+        'values': ['0-9', '60+', 'other'],
+    },
+    {
+        'name': 'glasses',
+        'index': 3,
+        'values': ['glasses', 'no%20glasses'],
+    },
+    {
+        'name': 'emotion_1',
+        'index': 4,
+        'values': ["angry", "contempt", "disgust", "fear", "happy", "neutral", "sad", "surprise"],
+    },
+    {
+        'name': 'emotion_2',
+        'index': 5,
+        'values': ["angry", "contempt", "disgust", "fear", "happy", "neutral", "sad", "surprise"],
+    },
+    {
+        'name': 'hair',
+        'index': 6,
+        'values': ["Bald", "Black", "Blond", "Brown", "Gray"],
+    },
+    {
+        'name': 'beard',
+        'index': 7,
+        'values': ["Beard", "No Beard"],
+    },
+    {
+        'name': 'hat',
+        'index': 8,
+        'values': ["Hat", "No Hat"],
+    },
+    {
+        'name': 'race',
+        'index': 9,
+        'values': ['asian', 'black', 'indian', 'latino hispanic', 'middle eastern', 'nan', 'white'],
+    }
+]
 
-mapping_race = {
-    'asian': 0,
-    'black': 0,
-    'indian': 0,
-    'latino hispanic': 0,
-    'middle eastern': 1,
-    'nan':0,
-    'white': 0
-}
+for label_mapping in label_mappings:
+    name = label_mapping['name']
+    values = label_mapping['values']
+    index = label_mapping['index']
 
-mapping_hair = {
-    "Bald": 1,
-    "Black": 0,
-    "Blond": 0,
-    "Brown": 0,
-    "Gray": 0,
-}
+    # Check if it's a binary label
+    if len(values) == 2:
+        mapping = {v: 0 for v in values}  # Combine classes into one
+        mapping[values[0]] = 1
+        print(mapping)
 
-mapping_beard = {
-    "No Beard": 0,
-    "Beard": 1,
-}
+        current_label = np.vectorize(mapping.get)(labels[:, index])
 
-mapping_hat = {
-    "No Hat": 0,
-    "Hat": 1
-}
+        # Train and evaluate the model
+        svm = LinearSVC(dual=False)
+        svm.fit(seeds, current_label)
+        score = svm.score(seeds, current_label)
+        print(f"Score for {name}: {score}")
 
-mapping_emotion = {
-    "angry": 0,
-    "contempt": 0,
-    "disgust": 0,
-    "fear": 0,
-    "happy": 0,
-    "neutral": 0,
-    "sad": 0,
-    "surprise": 1
-}
+        # Save the coefficient
+        np.save(f"out/PRUEBA/{name}.npy", svm.coef_.ravel())
 
-sex_label = labels[:, 1]
-age_label = np.vectorize(mapping_age.get)(labels[:, 2])
-glasses_label = np.vectorize(mapping_glasses.get)(labels[:, 3])
-emotion_label_1 = np.vectorize(mapping_emotion.get)(labels[:, 4])
-emotion_label_2 = np.vectorize(mapping_emotion.get)(labels[:, 5])
-hair_label = np.vectorize(mapping_hair.get)(labels[:, 6])
-beard_label = np.vectorize(mapping_beard.get)(labels[:, 7])
-hat_label = np.vectorize(mapping_hat.get)(labels[:, 8])
-race_label = np.vectorize(mapping_race.get)(labels[:, 9])
+    else:
+        for value in values:
+            # Create a deep copy of mapping
+            mapping = {v: 0 for v in values}
+            mapping[value] = 1
 
+            print(mapping)
 
-current = age_label
-svm = LinearSVC(dual=False)
-svm.fit(seeds, current)
-print(svm.score(seeds, current))
+            # Prepare labels
+            current_label = np.vectorize(mapping.get)(labels[:, index], 0)
 
-np.save("out/directions/20k/age_thirty.npy", svm.coef_.ravel())
+            # Train and evaluate the model
+            svm = LinearSVC(dual=False)
+            svm.fit(seeds, current_label)
+            score = svm.score(seeds, current_label)
+            print(f"Score for {name} - {value}: {score}")
+
+            # Save the coefficient
+            np.save(f"out/PRUEBA/{name}_{value}.npy", svm.coef_.ravel())

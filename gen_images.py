@@ -44,7 +44,7 @@ def parse_range(s: Union[str, List]) -> List[int]:
 
 @click.command()
 @click.option('--network', 'network_pkl', help='Network pickle filename', default="models/ffhq1024.pkl", required=False)
-@click.option('--seeds', type=parse_range, help='List of random seeds (e.g., \'0,1,4-6\')', default=0, required=False)
+@click.option('--seeds', type=parse_range, help='List of random seeds (e.g., \'0,1,4-6\')', default='0-100', required=False)
 @click.option('--w_space', is_flag=True, help='Interpolate in W space instead of Z space')
 @click.option('--outdir_img', help='Where to save the output images', type=str, default="out/images", required=False, metavar='DIR')
 @click.option('--outdir_seeds', help='Where to save the latent vector', type=str, default="out/", required=False, metavar='DIR')
@@ -88,17 +88,15 @@ def generate_images(
         PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(f'{outdir_img}/seed{seed:04d}.png')
 
     
-    # vector_seeds = np.concatenate(vector_seeds, axis=0)
-    # if(append_latent):
-    #     print("Appending latent vector to file...")
-    #     if(os.path.exists(f'{outdir_seeds}/seeds.npy')):
-    #         old_vector_seeds = np.load(f'{outdir_seeds}/seeds.npy')
-    #         vector_seeds = np.concatenate((old_vector_seeds, vector_seeds), axis=0)
-    # np.save(f'{outdir_seeds}/seeds.npy', vector_seeds)
+    vector_seeds = np.concatenate(vector_seeds, axis=0)
+    if(append_latent):
+        print("Appending latent vector to file...")
+        if(os.path.exists(f'{outdir_seeds}/seeds2.npy')):
+            old_vector_seeds = np.load(f'{outdir_seeds}/seeds2.npy')
+            vector_seeds = np.concatenate((old_vector_seeds, vector_seeds), axis=0)
+    np.save(f'{outdir_seeds}/seeds2.npy', vector_seeds)
 
 #----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     generate_images()
-
-#----------------------------------------------------------------------------
